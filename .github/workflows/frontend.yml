@@ -1,0 +1,57 @@
+name: Frontend checks
+
+on:
+  push:
+    paths: ["frontend/**", "backend/**", ".github/workflows/frontend.yml"]
+  pull_request:
+    paths: ["frontend/**", "backend/**", ".github/workflows/frontend.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: learning_platform
+          POSTGRES_USER: learning
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U learning -d learning_platform"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      DATABASE_URL: postgresql+psycopg://learning:ci-only-password@127.0.0.1:5433/learning_platform
+      JWT_SECRET: ci-browser-test-only-key-at-least-thirty-two-characters
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.20"
+          enable-cache: true
+      - run: uv sync --locked
+        working-directory: backend
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps --only-shell chromium
+      - run: npm run test:e2e

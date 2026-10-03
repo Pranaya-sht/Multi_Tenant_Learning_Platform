@@ -1,0 +1,36 @@
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# JavaScript
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+.playwright-state.json
+
+# Tooling and temporary output
+.uv-cache/
+.npm-cache/
+tmp/
+*.log
+.DS_Store
+Thumbs.db
+
+# Local reference and audit documents, not part of the submission
+/Multi-Tenant_Learning_Platform_Take-Home_Task (1) (1).md
+/Multi-Tenant_Learning_Platform_Take-Home_Task (1) (1).pdf
+/docs/performance.md
+/docs/submission-readiness.md
